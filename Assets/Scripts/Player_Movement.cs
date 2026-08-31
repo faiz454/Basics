@@ -11,18 +11,39 @@ public class Player_Movement : MonoBehaviour
     private Rigidbody rb;
     public float RotationSp;
     private bool turnLeft = false, turnRight = false;
+    public AudioSource engineAudio;
+    public float minPitch = 0.8f;
+    public float maxPitch = 2.4f;
+    public float topSpeed = 50f;
+    public float pitchSmoothSpeed = 4f;
+    private float targetPitch;
     // Start is called before the first frame update
     void Start()
     {
-        
+        Time.timeScale = 1f;
+        if (engineAudio != null)
+        {
+            engineAudio.loop = true;
+            engineAudio.pitch = minPitch;
+            if (!engineAudio.isPlaying)
+            {
+                engineAudio.Play();
+            }
+        }
     }
 
     // Update is called once per frame
     void Update()
     {
+        if (engineAudio != null)
+        {
+            float speedRatio = Mathf.Clamp01(speed / topSpeed);
+            targetPitch = Mathf.Lerp(minPitch, maxPitch, speedRatio);
+            engineAudio.pitch = Mathf.Lerp(engineAudio.pitch, targetPitch, Time.deltaTime * pitchSmoothSpeed);
+        }
         //restart game if goes out of the ground
-        
-            
+
+
         //if(Input.GetKey(KeyCode.D) || Input.GetKeyDown(KeyCode.RightArrow))
         //{
         //    transform.Rotate(0, RotationSp * Time.deltaTime, 0);
@@ -58,14 +79,20 @@ public class Player_Movement : MonoBehaviour
     public void Accelerate()
     {
         speed += 5f;
+        if(speed > topSpeed) speed = topSpeed;
         Debug.LogError("Accelerate called===" + speed);
         Debug.Log("accelerate");
     }
 
     public void Brake()
     {
-        movement = 0f;
-        Debug.LogError("Brake called===" + movement);
+        speed -= 8f;                            // CHANGE from: movement = 0f;
+        if (speed < 0f) speed = 0f;             // ADD clamp
+        Debug.Log("Brake called===" + speed);
+        //speed -= 8f;
+        //if(speed < 0f) speed = 0f;
+        //movement = 0f;
+        //Debug.LogError("Brake called===" + movement);
     }
     public void Rotate()
     {
@@ -114,6 +141,7 @@ public class Player_Movement : MonoBehaviour
     {
         rb = GetComponent<Rigidbody>();
     }
+
 
     
 }
